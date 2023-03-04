@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "346483710790",
+    "project_id": "preloved-items",
+    "storage_bucket": "preloved-items.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346483710790:android:96010f741fc60f85e02347",
+        "android_client_info": {
+          "package_name": "com.example.preloved_cloths"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "346483710790-6ic7m40vrd3vo5nr8mrk25rfmqdrnbs8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.preloved_cloths",
+            "certificate_hash": "c5fbe9ba8694373aed68967b60c9d07f14094064"
+          }
+        },
+        {
+          "client_id": "346483710790-r2l0i1ifl9c52oa812u252oui7g15hhd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDwXqFsuzlvTzeN14__KhgFp109kvs6DQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "346483710790-r2l0i1ifl9c52oa812u252oui7g15hhd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
