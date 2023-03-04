@@ -58,12 +58,16 @@ class CartController extends GetxController {
     }
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getAllCartProducts() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> allOrders() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
     return cartCollectionRef.where('userId', isEqualTo: userId).snapshots();
   }
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllCartProducts() {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
 
+    return ordersCollectionRef.where('userId', isEqualTo: userId).snapshots();
+  }
   void calculateCartTotal(cartList) {
     double total = 0.0;
     for (var item in cartList) {

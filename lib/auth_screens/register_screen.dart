@@ -1,5 +1,6 @@
 import 'package:advance_notification/advance_notification.dart';
 import 'package:flutter/material.dart';
+import 'package:preloved_cloths/auth_screens/auth_screens.dart';
 import 'package:preloved_cloths/controllers/auth_controller.dart';
 
 import '../main_wrapper.dart';
@@ -102,11 +103,6 @@ class RegisterScreen extends StatelessWidget {
                   final email = emailFieldController.text.trim();
                   final password = passwordFieldController.text.trim();
                   AuthController.instance.register(email, password);
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => MainWrapper(),
-                  //     ));
                 } else {
                   const AdvanceSnackBar(
                     textSize: 14.0,
@@ -138,86 +134,40 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: Dimensions.height10),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 16.0),
+            SizedBox(height: Dimensions.height30),
+            Padding(
+              padding: EdgeInsets.only(right: Dimensions.width10),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Expanded(
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1.0,
+                  Text(
+                    "Already have an account ? ",
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: Dimensions.font20,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ));
+                    },
                     child: Text(
-                      'OR',
+                      " Login ",
                       style: TextStyle(
-                        fontSize: Dimensions.font16,
-                        color: Colors.grey,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
+                        fontSize: Dimensions.font20,
                       ),
-                    ),
-                  ),
-                  const Expanded(
-                    child: Divider(
-                      color: Colors.grey,
-                      thickness: 1.0,
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: Dimensions.height15),
-            // GestureDetector(
-            //     onTap: () {
-            //       Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) => MainWrapper(),
-            //           ));
-            //     },
-            //     child: Container(
-            //       width: width * 0.7,
-            //       height: height * 0.06,
-            //       decoration: BoxDecoration(
-            //         // borderRadius: BorderRadius.circular(Dimensions.radius30),
-            //         image: const DecorationImage(
-            //           image: AssetImage("assets/img/loginbtn.png"),
-            //           fit: BoxFit.cover,
-            //         ),
-            //       ),
-            //       child: Padding(
-            //           padding: EdgeInsets.all(5),
-            //           child: Row(
-            //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //             children: [
-            //               Container(
-            //                 width: width * 0.2,
-            //                 height: height,
-            //                 decoration: const BoxDecoration(
-            //                   // color: Colors.white,
-            //                   // borderRadius: BorderRadius.circular(Dimensions.radius30),
-            //                   image: DecorationImage(
-            //                     image: AssetImage("assets/img/g.png"),
-            //                     // fit: BoxFit.cover,
-            //                   ),
-            //                 ),
-            //               ),
-            //               Center(
-            //                 child: Text(
-            //                   "Login with Google",
-            //                   style: TextStyle(
-            //                       fontSize: Dimensions.font26,
-            //                       fontWeight: FontWeight.bold,
-            //                       color: Colors.white),
-            //                 ),
-            //               ),
-            //             ],
-            //           )),
-            //     )),
-            // SizedBox(height: width * 0.1),
           ],
         ),
       ),

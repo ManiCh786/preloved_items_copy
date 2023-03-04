@@ -46,6 +46,8 @@ class CheckAuth extends StatelessWidget {
                 fontSize: Dimensions.font16);
           } else if (userRole == "admin" && status == "active") {
             Get.offAllNamed("/adminDashboard");
+          } else {
+            Get.offAll(() => LoginScreen());
           }
         }
       });

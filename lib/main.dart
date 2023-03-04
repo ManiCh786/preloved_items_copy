@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:preloved_cloths/controllers/auth_controller.dart';
 
 import '../utils/app_theme.dart';
-import 'auth_screens/login_screen.dart';
 import 'routes/routes.dart';
 
 void main() async {

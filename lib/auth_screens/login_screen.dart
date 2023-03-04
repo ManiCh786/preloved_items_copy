@@ -2,10 +2,7 @@ import 'package:advance_notification/advance_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../admin_screens/admin_screens.dart';
 import '../controllers/controller.dart';
-import '../main_wrapper.dart';
-import '../utils/dimensions.dart';
 import '../utils/utils.dart';
 import '../widget/widget.dart';
 import 'register_screen.dart';
