@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/controller.dart';
-import '../model/base_model.dart';
 import '../model/models.dart';
 import '../utils/constants.dart';
 import '../utils/utils.dart';

@@ -45,7 +45,6 @@ class CartController extends GetxController {
             textColor: Colors.white,
             fontSize: Dimensions.font16);
       }
-
     } catch (e) {
       Fluttertoast.showToast(
           msg: e.toString(),
@@ -61,19 +60,56 @@ class CartController extends GetxController {
   Stream<QuerySnapshot<Map<String, dynamic>>> allOrders() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
-    return cartCollectionRef.where('userId', isEqualTo: userId).snapshots();
+    return ordersCollectionRef.where('userId', isEqualTo: userId).snapshots();
   }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getOrdersCollection() {
+    return ordersCollectionRef.snapshots();
+  }
+
+  void approveOrRjectOrder(oId, status) {
+    try {
+      ordersCollectionRef.doc(oId).update({
+        'OrderStatus': status,
+      }).whenComplete(() {
+        Get.back();
+        Fluttertoast.showToast(
+            msg: "Order Status Updated !",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: Dimensions.font16);
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: "Error $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: Dimensions.font16);
+    }
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllCartProducts() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
-    return ordersCollectionRef.where('userId', isEqualTo: userId).snapshots();
+    return cartCollectionRef.where('userId', isEqualTo: userId).snapshots();
   }
+
   void calculateCartTotal(cartList) {
     double total = 0.0;
-    for (var item in cartList) {
-      total += item.pInfo['price'] * item.pInfo['quantity'];
+    if (cartList.toString().isNotEmpty) {
+      for (var item in cartList) {
+        total += item.pInfo['price'] * item.pInfo['quantity'];
+      }
+      cartTotal.value = total;
+    } else {
+      total = 0;
     }
-    cartTotal.value = total;
   }
 
   void deleteFromCart(String pId) async {
@@ -88,13 +124,15 @@ class CartController extends GetxController {
         await documentSnapshot.reference.delete();
       }
     } catch (e) {
-      Get.snackbar(
-        "",
-        "Failed to Delete Product",
-      );
-      e.printInfo();
+      Fluttertoast.showToast(
+          msg: "Error $e",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: Dimensions.font16);
     }
-    printInfo();
   }
 
   void decreaseQuantity(String id, int qty, bool isBulk) async {
@@ -197,6 +235,7 @@ class CartController extends GetxController {
         "orderAt": FieldValue.serverTimestamp(),
         "products": doc.data(),
         "totalBill": orderData['totalBill'],
+        "OrderStatus": orderData['orderStatus'],
       }).then((value) {
         clearCart();
         Fluttertoast.showToast(

@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:preloved_cloths/controllers/product_controller.dart';
+import 'package:preloved_cloths/screens/search.dart';
 
 import '../controllers/category_controller.dart';
 import '../model/models.dart';
@@ -100,10 +101,7 @@ class _HomeState extends State<Home> {
                   stream: categoryController.readAllCategories(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator(
-                        color: AppColors.deepPink,
-                      ));
+                      return Text("");
                     } else if (snapshot.data!.docs.isEmpty) {
                       return Center(
                           child: BigText(
@@ -116,7 +114,7 @@ class _HomeState extends State<Home> {
                         child: Container(
                           margin: const EdgeInsets.only(top: 7),
                           width: size.width,
-                          height: size.height * 0.14,
+                          height: size.height * 0.2,
                           child: ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,
@@ -131,21 +129,33 @@ class _HomeState extends State<Home> {
                                 CategoriesModel current = categoriesList[index];
                                 return Padding(
                                   padding: EdgeInsets.all(Dimensions.height10),
-                                  child: Column(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: Dimensions.radius30,
-                                        backgroundImage:
-                                            NetworkImage(current.catImageUrl!),
-                                      ),
-                                      SizedBox(
-                                        height: size.height * 0.008,
-                                      ), 
-                                      Text(
-                                        current.catName!,
-                                        style: textTheme.bodyMedium,
-                                      ),
-                                    ],
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Search(
+                                            catName: current.catName!,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: Dimensions.radius30,
+                                          backgroundImage: NetworkImage(
+                                              current.catImageUrl!),
+                                        ),
+                                        SizedBox(
+                                          height: size.height * 0.008,
+                                        ),
+                                        Text(
+                                          current.catName!,
+                                          style: textTheme.bodyMedium,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               }),
@@ -161,7 +171,7 @@ class _HomeState extends State<Home> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                           child: CircularProgressIndicator(
-                        color: AppColors.deepPink,
+                        color: AppColors.yellowColor,
                       ));
                     } else if (snapshot.data!.docs.isEmpty) {
                       return Center(
@@ -236,7 +246,7 @@ class _HomeState extends State<Home> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
                             child: CircularProgressIndicator(
-                          color: AppColors.deepPink,
+                          color: AppColors.yellowColor,
                         ));
                       } else if (snapshot.data!.docs.isEmpty) {
                         return Center(

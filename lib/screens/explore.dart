@@ -1,15 +1,12 @@
-import 'package:animate_do/animate_do.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:line_icons/line_icons.dart';
 
 import '../controllers/controller.dart';
-import '../model/base_model.dart';
 import '../model/models.dart';
-import '../utils/constants.dart';
 import '../utils/utils.dart';
-import '../data/app_data.dart';
-import '../screens/details.dart';
 import '../widget/widget.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -19,18 +16,22 @@ class ExploreScreen extends StatefulWidget {
   State<ExploreScreen> createState() => _ExploreScreen();
 }
 
-class _ExploreScreen extends State<ExploreScreen> {
+class _ExploreScreen extends State<ExploreScreen>
+    with TickerProviderStateMixin {
   late TextEditingController controller;
+  late final TabController _tabController;
 
   @override
   void initState() {
     controller = TextEditingController();
 
     super.initState();
+    if (FirebaseAuth.instance.currentUser!.uid.isNotEmpty) {
+      _tabController = TabController(length: 2, vsync: this);
+    }
   }
 
-  final productController = Get.find<ProductController>();
-
+  final cartController = Get.find<CartController>();
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -45,183 +46,403 @@ class _ExploreScreen extends State<ExploreScreen> {
           height: size.height,
           child: Column(
             children: [
-              StreamBuilder(
-                  stream: productController.getAllProducts(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator(
-                        color: AppColors.deepPink,
-                      ));
-                    } else if (snapshot.data!.docs.isEmpty) {
-                      return Center(
+              Container(
+                width: Get.width,
+                child: TabBar(
+                    controller: _tabController,
+                    indicatorColor: AppColors.yellowColor,
+                    indicatorWeight: 3,
+                    tabs: [
+                      Tab(
                           child: BigText(
-                        text: "No Record Found !",
+                        text: "Current",
                         color: Colors.black,
-                      ));
-                    } else {
-                      List<ProductsModel> productsList = snapshot.data!.docs
-                          .map((document) =>
-                              ProductsModel.fromFirestore(document))
-                          .toList();
+                      )),
+                      Tab(
+                          child: BigText(
+                        text: "History",
+                        color: Colors.black,
+                      )),
+                    ]),
+              ),
+              Expanded(
+                  child: StreamBuilder(
+                      stream: cartController.allOrders(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator(
+                            color: AppColors.deepPink,
+                          ));
+                        } else {
+                          List<OrderStatus> orderList = snapshot.data!.docs
+                              .where((status) =>
+                                  status['OrderStatus']
+                                      .toString()
+                                      .toLowerCase() ==
+                                  "pending")
+                              .map((document) =>
+                                  OrderStatus.fromFirestore(document))
+                              .toList();
 
-                      return Expanded(
-                        child: productsList.isNotEmpty
+                          List<OrderStatus> shippedOrderList = snapshot
+                              .data!.docs
+                              .where((status) =>
+                                  status['OrderStatus']
+                                      .toString()
+                                      .toLowerCase() !=
+                                  "pending")
+                              .map((document) =>
+                                  OrderStatus.fromFirestore(document))
+                              .toList();
 
-                            ? GridView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                itemCount: productsList.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        childAspectRatio: 0.63),
-                                itemBuilder: (context, index) {
-                                  final pId = snapshot.data!.docs[index].id;
-
-                                  ProductsModel current = productsList[index];
-
-                                  return FadeInUp(
-                                    delay: Duration(milliseconds: 100 * index),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) {
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                            return Details(
-                                              data: current,
-                                              isCameFromMostPopularPart: false,
-                                              isBulk: current.isBulk!,
-                                              pId: pId,
-                                            );
-                                          }),
-                                        );
-                                      },
-                                      child: Hero(
-                                        tag: pId,
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Positioned(
-                                              top: size.height * 0.02,
-                                              left: size.width * 0.01,
-                                              right: size.width * 0.01,
-                                              child: Container(
-                                                width: size.width * 0.5,
-                                                height: size.height * 0.28,
-                                                margin:
-                                                    const EdgeInsets.all(10),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(3),
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(
-                                                        current.pImage!),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                  boxShadow: const [
-                                                    BoxShadow(
-                                                      offset: Offset(0, 4),
-                                                      blurRadius: 4,
-                                                      color: Color.fromARGB(
-                                                          61, 0, 0, 0),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: size.height * 0.04,
-                                              child: Text(
-                                                current.pName!,
-                                                style: textTheme.headline2,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: size.height * 0.01,
-                                              child: RichText(
-                                                  text: TextSpan(
-                                                      text: "PKR",
-                                                      style: textTheme.subtitle2
-                                                          ?.copyWith(
-                                                        color: primaryColor,
-                                                        fontSize:
-                                                            Dimensions.font20,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                      children: [
-                                                    TextSpan(
-                                                      text: current.sizes!
-                                                          .map(
-                                                              (e) => e['price'])
-                                                          .first
-                                                          .toString(),
-                                                      style: textTheme.subtitle2
-                                                          ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    )
-                                                  ])),
-                                            ),
-                                            Positioned(
-                                              top: size.height * 0.01,
-                                              right: 0,
-                                              child: CircleAvatar(
-                                                backgroundColor: primaryColor,
-                                                child: IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                    LineIcons.addToShoppingCart,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                          return TabBarView(
+                            controller: _tabController,
+                            children: [
+                              orderList.isEmpty
+                                  ? Center(
+                                      child: BigText(
+                                          text: "Nothing to Show Here !"),
+                                    )
+                                  : PendingOrdersWidget(
+                                      orderList: orderList,
+                                      snapshot: snapshot,
                                     ),
-                                  );
-                                })
-
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: size.height * 0.02,
-                                  ),
-                                  FadeInUp(
-                                    delay: const Duration(milliseconds: 200),
-                                    child: const Image(
-                                      image: AssetImage(
-                                          "assets/images/search_fail.png"),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: size.height * 0.01,
-                                  ),
-                                  FadeInUp(
-                                    delay: const Duration(milliseconds: 250),
-                                    child: Text(
-                                      "No Result Found :(",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: Dimensions.font16),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      );
-                    }
-                  })
+                              shippedOrderList.isEmpty
+                                  ? Center(
+                                      child: BigText(
+                                          text: "Nothing to Show Here !"),
+                                    )
+                                  : ShippedOrdersWidget(
+                                      snapshot: snapshot,
+                                      shippedOrderList: shippedOrderList),
+                            ],
+                          );
+                        }
+                      }))
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+class ShippedOrdersWidget extends StatelessWidget {
+  const ShippedOrdersWidget({
+    super.key,
+    required this.shippedOrderList,
+    required this.snapshot,
+  });
+
+  final List<OrderStatus> shippedOrderList;
+  final AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: shippedOrderList.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: () {
+                Get.dialog(ViewOrderProductDetailDialog(
+                    index: index, shippedOrderList: shippedOrderList));
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Dimensions.radius15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 2,
+                      offset: const Offset(0, 1), // changes position of shadow
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Dimensions.width15,
+                    vertical: Dimensions.height10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Order Id  #${snapshot.data!.docs[index].id}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: Dimensions.font16,
+                          ),
+                        ),
+                        Text(
+                          "${shippedOrderList[index].status}",
+                          style: TextStyle(
+                            color:  shippedOrderList[index].status== "shipped" ? Colors.green :Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Dimensions.font16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Dimensions.height10),
+                    Text(
+                      'Ordered on ${shippedOrderList[index].orderAt!.toDate()} ',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: Dimensions.font16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+}
+
+class ViewOrderProductDetailDialog extends StatelessWidget {
+  const ViewOrderProductDetailDialog({
+    super.key,
+    required this.shippedOrderList,
+    required this.index,
+  });
+
+  final List<OrderStatus> shippedOrderList;
+  final int index;
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(Dimensions.width15),
+        child: SizedBox(
+          height: Get.height * 0.4,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                BigText(
+                  text: 'Product Details',
+                ),
+                SizedBox(height: Dimensions.height15),
+                const Divider(
+                  height: 2,
+                  color: Colors.black,
+                ),
+                SizedBox(height: Dimensions.height15),
+                BigText(
+                  size: Dimensions.font20,
+                  color: Colors.black,
+                  text:
+                      'Product Name ::   ${shippedOrderList[index].products!['pInfo']['pName']}',
+                ),
+                SizedBox(height: Dimensions.height15),
+                BigText(
+                  size: Dimensions.font20,
+                  color: Colors.black,
+                  text:
+                      'Price ::   ${shippedOrderList[index].products!['pInfo']['price']} PKR',
+                ),
+                SizedBox(height: Dimensions.height15),
+                BigText(
+                  size: Dimensions.font20,
+                  color: Colors.black,
+                  text:
+                      'Quantity ::   ${shippedOrderList[index].products!['pInfo']['quantity']}',
+                ),
+                SizedBox(height: Dimensions.height15),
+                BigText(
+                  size: Dimensions.font20,
+                  color: Colors.black,
+                  text:
+                      'Size ::   ${shippedOrderList[index].products!['pInfo']['size']}',
+                ),
+                SizedBox(height: Dimensions.height15),
+                BigText(
+                  size: Dimensions.font20,
+                  color: Colors.black,
+                  text: 'Total Bill ::   ${shippedOrderList[index].totalBill}',
+                ),
+                SizedBox(height: Dimensions.height15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: SmallText(
+                          text: 'Close',
+                          size: Dimensions.font16,
+                          color: Colors.red),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PendingOrdersWidget extends StatelessWidget {
+  const PendingOrdersWidget({
+    super.key,
+    required this.orderList,
+    required this.snapshot,
+  });
+
+  final List<OrderStatus> orderList;
+  final AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot;
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: orderList.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: () {
+                Get.dialog(Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(Dimensions.width15),
+                    child: SizedBox(
+                      height: Get.height * 0.4,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            BigText(
+                              text: 'Product Details',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            const Divider(
+                              height: 2,
+                              color: Colors.black,
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            BigText(
+                              size: Dimensions.font20,
+                              color: Colors.black,
+                              text:
+                                  'Product Name ::   ${orderList[index].products!['pInfo']['pName']}',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            BigText(
+                              size: Dimensions.font20,
+                              color: Colors.black,
+                              text:
+                                  'Price ::   ${orderList[index].products!['pInfo']['price']} PKR',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            BigText(
+                              size: Dimensions.font20,
+                              color: Colors.black,
+                              text:
+                                  'Quantity ::   ${orderList[index].products!['pInfo']['quantity']}',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            BigText(
+                              size: Dimensions.font20,
+                              color: Colors.black,
+                              text:
+                                  'Size ::   ${orderList[index].products!['pInfo']['size']}',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            BigText(
+                              size: Dimensions.font20,
+                              color: Colors.black,
+                              text:
+                                  'Total Bill ::   ${orderList[index].totalBill}',
+                            ),
+                            SizedBox(height: Dimensions.height15),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () => Get.back(),
+                                  child: SmallText(
+                                      text: 'Close',
+                                      size: Dimensions.font16,
+                                      color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ));
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Dimensions.radius15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 2,
+                      offset: const Offset(0, 1), // changes position of shadow
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(
+                    horizontal: Dimensions.width15,
+                    vertical: Dimensions.height10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Order Id  #${snapshot.data!.docs[index].id}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: Dimensions.font16,
+                          ),
+                        ),
+                        Text(
+                          " ${orderList[index].status}",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Dimensions.font16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Dimensions.height10),
+                    Text(
+                      'Ordered on ${orderList[index].orderAt!.toDate()} ',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: Dimensions.font16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
   }
 }

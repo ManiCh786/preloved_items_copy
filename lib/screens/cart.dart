@@ -1,17 +1,14 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preloved_cloths/model/models.dart';
 
 import '../controllers/controller.dart';
-import '../data/app_data.dart';
 import '../utils/utils.dart';
 import '../widget/reuseable_row_for_cart.dart';
 import '../main_wrapper.dart';
-import '../model/base_model.dart';
-import '../utils/constants.dart';
 import '../widget/reuseable_button.dart';
 import '../widget/widget.dart';
 import 'checkout.dart';
@@ -297,7 +294,7 @@ class _CartState extends State<Cart> {
                       List<CartModel> cartList = snapshot.data!.docs
                           .map((document) => CartModel.fromFirestore(document))
                           .toList();
-                    cartController.calculateCartTotal(cartList);
+                      cartController.calculateCartTotal(cartList);
 
                       return Positioned(
                         bottom: 0,
@@ -319,7 +316,7 @@ class _CartState extends State<Cart> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          "Promo/Student Code or Vourchers",
+                                          "To Pay ",
                                           style: textTheme.bodyMedium?.copyWith(
                                               fontSize: Dimensions.font16),
                                         ),
@@ -373,21 +370,34 @@ class _CartState extends State<Cart> {
                                       child: ReuseableButton(
                                           text: "Checkout",
                                           onTap: () {
-                                            Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        CheckoutPage(
-                                                          cartProducts:
-                                                              cartList,
-                                                          totalBill: (cartController
-                                                                  .cartTotal
-                                                                  .toDouble() +
-                                                              (cartController
-                                                                      .cartTotal
-                                                                      .toDouble() *
-                                                                  0.05)),
-                                                        )));
+                                            if (cartList.isEmpty) {
+                                              Fluttertoast.showToast(
+                                                  msg:
+                                                      "Your cart is Empty Can't Checkout",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity: ToastGravity.BOTTOM,
+                                                  timeInSecForIosWeb: 2,
+                                                  backgroundColor: Colors.red,
+                                                  textColor: Colors.white,
+                                                  fontSize: Dimensions.font16);
+                                            } else {
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          CheckoutPage(
+                                                            cartProducts:
+                                                                cartList,
+                                                            totalBill: (cartController
+                                                                    .cartTotal
+                                                                    .toDouble() +
+                                                                (cartController
+                                                                        .cartTotal
+                                                                        .toDouble() *
+                                                                    0.05)),
+                                                          )));
+                                            }
                                           }),
                                     ),
                                   )

@@ -8,5 +8,6 @@ class HomeDrawerBindings implements Bindings {
     Get.put<DrawerHomeController>(DrawerHomeController());
     Get.put<CategoryController>(CategoryController());
     Get.put<ProductController>(ProductController());
+    Get.put<CartController>(CartController());
   }
 }

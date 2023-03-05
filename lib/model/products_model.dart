@@ -7,8 +7,8 @@ class ProductsModel {
   final bool? isBulk;
   final String? forGender;
   final String? forSeason;
-  final String? createdAt;
-  final String? updatedAt;
+  final Timestamp? createdAt;
+  final Timestamp? updatedAt;
   final List<dynamic>? category;
   final List<dynamic>? sizes;
 
@@ -27,6 +27,20 @@ class ProductsModel {
 
   factory ProductsModel.fromFirestore(DocumentSnapshot document) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+    return ProductsModel(
+      pImage: data['pImage'],
+      pName: data['pName'],
+      pDesc: data['pDesc'],
+      sizes: data['sizes'],
+      isBulk: data['isBulk'],
+      category: data['category'],
+      forGender: data['forGender'],
+      forSeason: data['forSeason'],
+      updatedAt: data['createdAt'],
+      createdAt: data['updatedAt'],
+    );
+  }
+  factory ProductsModel.fromMap(Map<String, dynamic> data) {
     return ProductsModel(
       pImage: data['pImage'],
       pName: data['pName'],

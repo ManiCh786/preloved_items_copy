@@ -29,6 +29,8 @@ class ProductController extends GetxController {
           'forGender': productData['forGender'],
           'forSeason': productData['forSeason'],
           'sizes': productData['sizes'],
+          'createdAt': productData['createdAt'],
+          'updatedAt': productData['updatedAt'],
         }).then((value) {
           Fluttertoast.showToast(
               msg: "Product Added Successfully",
@@ -56,10 +58,9 @@ class ProductController extends GetxController {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllProducts() {
-    
-     return  productCollectionRef.snapshots();
-    
+    return productCollectionRef.snapshots();
   }
+
   void deleteProduct(String pId, String imageUrl) async {
     try {
       final Reference ref = FirebaseStorage.instance.refFromURL(imageUrl);

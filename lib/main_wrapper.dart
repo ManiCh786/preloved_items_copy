@@ -28,9 +28,9 @@ class _MainWrapperState extends State<MainWrapper> {
 
   List<Widget> screens = [
     const Home(),
-    const Search(),
+    Search(catName: ""),
     const ExploreScreen(),
-    Check(),
+    const UserProfile(),
   ];
 
   @override
@@ -56,7 +56,7 @@ class _MainWrapperState extends State<MainWrapper> {
                       : _index == 1
                           ? "Search"
                           : _index == 2
-                              ? "Explore"
+                              ? "My Orders"
                               : "Profile",
                   style: TextStyle(
                       fontSize: Dimensions.font16,
@@ -115,7 +115,9 @@ class _MainWrapperState extends State<MainWrapper> {
       ),
       body: _index == 0
           ? isSearchActive
-              ? const Search()
+              ? Search(
+                  catName: "",
+                )
               : const Home()
           : screens[_index],
       bottomNavigationBar: BottomBarBubble(
@@ -124,7 +126,7 @@ class _MainWrapperState extends State<MainWrapper> {
         items: [
           BottomBarItem(iconData: Icons.home),
           BottomBarItem(iconData: Icons.search),
-          BottomBarItem(iconData: Icons.explore),
+          BottomBarItem(iconData: Icons.shopping_bag_rounded),
           BottomBarItem(iconData: Icons.person),
         ],
         onSelect: (index) {
@@ -137,8 +139,8 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 }
 
-class Check extends StatelessWidget {
-  const Check({super.key});
+class UserProfile extends StatelessWidget {
+  const UserProfile({super.key});
 
   @override
   Widget build(BuildContext context) {

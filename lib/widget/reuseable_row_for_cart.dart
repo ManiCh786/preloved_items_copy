@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../utils/utils.dart';
 import 'reuseable_text.dart';
 
 class ReuseableRowForCart extends StatelessWidget {
@@ -16,7 +17,7 @@ class ReuseableRowForCart extends StatelessWidget {
   Widget build(BuildContext context) {
     var textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
+      padding: EdgeInsets.only(top: Dimensions.height10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

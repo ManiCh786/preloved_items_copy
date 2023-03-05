@@ -122,6 +122,7 @@ class CheckoutPage extends StatelessWidget {
                             "orderAt": FieldValue.serverTimestamp(),
                             "products": cartProducts,
                             "totalBill": totalBill,
+                            "orderStatus": "pending",
                           };
                           cartController.checkout(checkOutData);
                         } else {

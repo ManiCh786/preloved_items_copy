@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
+import '../utils/utils.dart';
 
 class ReuseableText extends StatelessWidget {
   const ReuseableText({super.key, required this.price});
@@ -12,9 +13,9 @@ class ReuseableText extends StatelessWidget {
     var textTheme = Theme.of(context).textTheme;
     return RichText(
       text: TextSpan(
-        text: "€",
+        text: "PKR   ",
         style: textTheme.subtitle2?.copyWith(
-          fontSize: 21,
+          fontSize: Dimensions.font20,
           color: primaryColor,
           fontWeight: FontWeight.bold,
         ),

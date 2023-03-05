@@ -42,7 +42,7 @@ class AdminDashboardContainer extends StatelessWidget {
             ),
           ],
         ),
-        width: width * 0.40,
+        width: width * 0.45,
         child: Padding(
           padding: EdgeInsets.all(Dimensions.width15),
           child: Column(

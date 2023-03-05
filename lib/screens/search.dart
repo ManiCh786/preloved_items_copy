@@ -4,14 +4,13 @@ import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preloved_cloths/model/models.dart';
 import '../controllers/controller.dart';
-import '../utils/constants.dart';
-import '../data/app_data.dart';
 import '../screens/details.dart';
 import '../utils/utils.dart';
 import '../widget/widget.dart';
 
 class Search extends StatefulWidget {
-  const Search({super.key});
+  Search({super.key, required this.catName});
+  String catName = "";
 
   @override
   State<Search> createState() => _SearchState();
@@ -23,21 +22,29 @@ class _SearchState extends State<Search> {
   @override
   void initState() {
     controller = TextEditingController();
-
+    _selectedCategory = "";
+    _selectedSeason = "";
     super.initState();
   }
 
   onSearch(String search) {
-    setState(() {
-    });
+    if (widget.catName.isEmpty) {
+      setState(() {});
+    }
   }
 
   final productController = Get.find<ProductController>();
+  final categoryController = Get.find<CategoryController>();
+
+  String? _selectedCategory = "";
+
+  final List<String> _season = ['Summer', 'Winter'];
+  String? _selectedSeason = "";
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var textTheme = Theme.of(context).textTheme;
-
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -60,6 +67,7 @@ class _SearchState extends State<Search> {
                         onChanged: (value) {
                           onSearch(value);
                         },
+                        onSubmitted: onSearch(controller.text),
                         style: textTheme.displaySmall?.copyWith(
                             fontSize: Dimensions.font16,
                             fontWeight: FontWeight.w400),
@@ -70,7 +78,6 @@ class _SearchState extends State<Search> {
                           suffixIcon: IconButton(
                             onPressed: () {
                               controller.clear();
-                            
                             },
                             icon: const Icon(Icons.close),
                           ),
@@ -90,18 +97,20 @@ class _SearchState extends State<Search> {
                   ),
                 ),
               ),
-
               SizedBox(
                 height: size.height * 0.01,
               ),
-
+              filtersMethod(size),
+              SizedBox(
+                height: size.height * 0.01,
+              ),
               StreamBuilder(
                   stream: productController.getAllProducts(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                           child: CircularProgressIndicator(
-                        color: AppColors.deepPink,
+                        color: AppColors.yellowColor,
                       ));
                     } else if (snapshot.data!.docs.isEmpty) {
                       return Center(
@@ -116,11 +125,40 @@ class _SearchState extends State<Search> {
                           .where((e) => e.pName
                               .toString()
                               .toLowerCase()
-                              .contains(controller.text.toLowerCase()))
+                              .contains(controller.text.toLowerCase().trim()))
                           .toList();
+                      if (widget.catName.isNotEmpty) {
+                        productsList = snapshot.data!.docs
+                            .where((product) {
+                              return product['category'].any((category) =>
+                                  category.toString().toLowerCase() ==
+                                  widget.catName.toLowerCase());
+                            })
+                            .map((document) =>
+                                ProductsModel.fromFirestore(document))
+                            .toList();
+                      } else if (_selectedCategory.toString().isNotEmpty) {
+                        _selectedSeason = "summer";
+                        productsList = productsList
+                            .where((product) {
+                              return product.category!.any((category) =>
+                                  category.toString().toLowerCase() ==
+                                  _selectedCategory.toString().toLowerCase());
+                            })
+                            .where((e) =>
+                                e.forSeason.toString().toLowerCase() ==
+                                _selectedSeason.toString().toLowerCase())
+                            .toList();
+                      } else if (_selectedSeason.toString().isNotEmpty) {
+                        productsList = productsList
+                            .where((e) =>
+                                e.forSeason.toString().toLowerCase() ==
+                                _selectedSeason.toString().toLowerCase())
+                            .toList();
+                      }
+
                       return Expanded(
                         child: productsList.isNotEmpty
-
                             ? GridView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 itemCount: productsList.length,
@@ -150,7 +188,7 @@ class _SearchState extends State<Search> {
                                             }),
                                           )),
                                       child: Hero(
-                                        tag: current.pName!,
+                                        tag: current.pName!.toString(),
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
@@ -227,8 +265,7 @@ class _SearchState extends State<Search> {
                                               child: CircleAvatar(
                                                 backgroundColor: primaryColor,
                                                 child: IconButton(
-                                                  onPressed: () {
-                                                  },
+                                                  onPressed: () {},
                                                   icon: const Icon(
                                                     LineIcons.addToShoppingCart,
                                                     color: Colors.white,
@@ -242,35 +279,35 @@ class _SearchState extends State<Search> {
                                     ),
                                   );
                                 })
-
-
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: size.height * 0.02,
-                                  ),
-                                  FadeInUp(
-                                    delay: const Duration(milliseconds: 200),
-                                    child: const Image(
-                                      image: AssetImage(
-                                          "assets/images/search_fail.png"),
-                                      fit: BoxFit.cover,
+                            : SingleChildScrollView(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      height: size.height * 0.02,
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: size.height * 0.01,
-                                  ),
-                                  FadeInUp(
-                                    delay: const Duration(milliseconds: 250),
-                                    child: const Text(
-                                      "No Result Found :(",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 16),
+                                    FadeInUp(
+                                      delay: const Duration(milliseconds: 200),
+                                      child: const Image(
+                                        image: AssetImage(
+                                            "assets/images/search_fail.png"),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(
+                                      height: size.height * 0.01,
+                                    ),
+                                    FadeInUp(
+                                      delay: const Duration(milliseconds: 250),
+                                      child: const Text(
+                                        "No Result Found :(",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 16),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                       );
                     }
@@ -280,5 +317,119 @@ class _SearchState extends State<Search> {
         ),
       ),
     );
+  }
+
+  FadeInUp filtersMethod(Size size) {
+    return FadeInUp(
+        delay: const Duration(milliseconds: 50),
+        child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
+            child: SizedBox(
+              width: size.width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Category',
+                            style: TextStyle(
+                              fontSize: Dimensions.font16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory = "";
+                                _selectedSeason = "";
+                              });
+                            },
+                            child: Text(
+                              'Clear Filters',
+                              style: TextStyle(
+                                fontSize: Dimensions.font14,
+                                color: AppColors.yellowColor,
+                                fontWeight: FontWeight.w100,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      StreamBuilder(
+                          stream: categoryController.readAllCategories(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Text('');
+                            } else if (snapshot.data!.docs.isEmpty) {
+                              return Center(
+                                  child: BigText(
+                                text: "No Category Added !",
+                                color: Colors.black,
+                              ));
+                            } else {
+                              List<CategoriesModel> categoriesList = snapshot
+                                  .data!.docs
+                                  .map((document) =>
+                                      CategoriesModel.fromFirestore(document))
+                                  .toList();
+
+                              return Wrap(
+                                spacing: 8,
+                                children: categoriesList.map((category) {
+                                  return FilterChip(
+                                    label: Text(category.catName!),
+                                    selected:
+                                        _selectedCategory == category.catName,
+                                    onSelected: (isSelected) {
+                                      setState(() {
+                                        _selectedCategory = isSelected
+                                            ? category.catName
+                                            : null;
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                              );
+                            }
+                          }),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Season',
+                        style: TextStyle(
+                          fontSize: Dimensions.font16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 8,
+                        children: _season.map((season) {
+                          return FilterChip(
+                            label: Text(season),
+                            selected: _selectedSeason == season,
+                            onSelected: (isSelected) {
+                              setState(() {
+                                _selectedSeason = isSelected ? season : null;
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )));
   }
 }
